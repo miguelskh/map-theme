@@ -1,0 +1,45 @@
+ public void setTheme(ThemeFile theme, boolean allLayers) {
+        setTheme(ThemeLoader.load(theme), allLayers);
+    }
+
+    public void setTheme(IRenderTheme theme) {
+        setTheme(theme, false);
+    }
+
+    public void setTheme(IRenderTheme theme, boolean allLayers) {
+        if (theme == null) {
+            throw new IllegalArgumentException("Theme cannot be null.");
+        }
+
+        boolean themeSet = false;
+        for (Layer layer : mLayers) {
+            if (layer instanceof VectorTileLayer) {
+                ((VectorTileLayer) layer).setRenderTheme(theme);
+                themeSet = true;
+                if (!allLayers)
+                    break;
+            }
+        }
+        if (!themeSet) {
+            log.error("No vector layers set");
+            throw new IllegalStateException();
+        }
+
+        MapRenderer.setBackgroundColor(theme.getMapBackground());
+
+        clearMap();
+    }
+
+    public IRenderTheme getTheme() {
+        for (Layer layer : mLayers) {
+            if (layer instanceof VectorTileLayer) {
+                return ((VectorTileLayer) layer).getTheme();
+            }
+        }
+        return null;
+    }
+
+    public void destroy() {
+        mLayers.destroy();
+        mAsyncExecutor.dispose();
+    }
